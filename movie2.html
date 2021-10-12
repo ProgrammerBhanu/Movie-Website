@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies Adda</title>
+    <style>
+        body {
+            background-color: black;
+        }
+        
+        * {
+            color: white;
+        }
+        
+        #product {
+            width: 90%;
+            min-height: 500px;
+            margin: 5%;
+            display: grid;
+            gap: 5%;
+            padding: 20px;
+            grid-template-columns: repeat(4, 20%);
+            grid-auto-rows: auto;
+            justify-content: center;
+        }
+        
+        img {
+            width: 80%;
+            border: 1px solid white;
+        }
+        
+        input,
+        button {
+            color: red;
+        }
+        
+        input {
+            width: 200px;
+            padding: 5px;
+        }
+        
+        .box {
+            border-radius: 10px;
+            background-color: #424242;
+            display: flex;
+            flex-direction: column;
+            margin: 2% 25% 0% 25%;
+            text-align: center;
+            padding-bottom: 2%;
+        }
+        
+        .box2 {
+            display: flex;
+            margin: auto;
+            justify-content: center;
+        }
+        
+        #tag {
+            position: absolute;
+            background-color: red;
+            margin: 4px;
+            padding-right: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>Movies Adda</h1>
+        <div class="box2">
+            <input type="text" id="movie" placeholder="Movie title">
+            <button onclick="movies()">Search</button>
+        </div>
+    </div>
+    <div id="product"></div>
+</body>
+<script>
+    async function movies() {
+        let name = document.getElementById("movie").value;
+        console.log(name);
+        let res = await fetch(`http://www.omdbapi.com/?s=${name}&apikey=b282abeb&`);
+
+        let data = await res.json();
+        if (data.Response == 'True') {
+            console.log(typeof(data.Response));
+            showItem(data.Search);
+            console.log(data.Search);
+        } else {
+            console.log(data);
+            alert(data.Error);
+        }
+        document.getElementById("movie").value = "";
+    }
+    var parent = document.getElementById("product");
+
+    function showItem(data) {
+        parent.innerText = null;
+        data.forEach(function(product) {
+
+            let pro_div = document.createElement("div");
+            let pro_div2 = document.createElement("div");
+
+            let pro_img = document.createElement("img");
+
+            pro_img.src = product.Poster;
+
+            let pro_name = document.createElement("p");
+            pro_name.textContent = "Title :" + product.Title;
+
+            let pro_type = document.createElement("p");
+            pro_type.textContent = "Type :" + product.Type;
+
+            let pro_year = document.createElement("p");
+            pro_year.textContent = "Year :" + product.Year;
+
+            let rating = document.createElement("p");
+            rating.textContent = "imdbID :" + product.imdbID;
+
+            let add_btn = document.createElement("button");
+            add_btn.textContent = "See";
+
+            add_btn.onclick = function() {
+                details(product);
+            };
+            let x = popular(product.Title)
+                .then(function(res) {
+                    console.log(res);
+                    if (res > 8.5) {
+                        let tag = document.createElement('p');
+                        tag.textContent = "Popular/" + res;
+                        tag.setAttribute('id', 'tag');
+
+                        pro_div2.append(tag);
+                    }
+                })
+
+
+            pro_div.append(pro_div2, pro_img, pro_name, pro_type, pro_year, rating, add_btn);
+            parent.append(pro_div);
+
+        });
+    }
+
+
+
+    function details(pr) {
+
+        localStorage.setItem("AboutMovie", JSON.stringify([]));
+
+
+        var mov = JSON.parse(localStorage.getItem("AboutMovie"));
+        mov.push(pr);
+        localStorage.setItem("AboutMovie", JSON.stringify(mov));
+
+        window.location.href = "movieDetail.html";
+    }
+
+    async function popular(name) {
+        let movie_rat = await fetch(`http://www.omdbapi.com/?t=${name}&apikey=b282abeb&`);
+
+        let rating = await movie_rat.json();
+        //console.log(rating.imdbRating);
+        return rating.imdbRating;
+
+
+    }
+</script>
+
+</html>
