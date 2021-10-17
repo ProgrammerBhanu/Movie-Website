@@ -8,7 +8,7 @@
     <title>Movies Adda</title>
     <style>
         body {
-            background-color: black;
+            background-color: #0c111b;
         }
         
         * {
@@ -44,7 +44,7 @@
         
         .box {
             border-radius: 10px;
-            background-color: #424242;
+            background-color: #334366;
             display: flex;
             flex-direction: column;
             margin: 2% 25% 0% 25%;
@@ -64,35 +64,77 @@
             margin: 4px;
             padding-right: 0.8rem;
         }
+        /* Search part*/
+        
+        #movies {
+            background-color: #0c111b;
+            position: absolute;
+            top: 22%;
+            left: 40%;
+            height: 200px;
+            width: 270px;
+            border: 1px solid black;
+            overflow-y: scroll;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .box_div {
+            display: flex;
+            background-color: #334366;
+            border-radius: 5px;
+            margin: 3%;
+            height: 80px;
+        }
+        
+        .box_div img {
+            width: 30%;
+            border: none;
+        }
+        
+        .box_div div {
+            margin-left: 10px;
+            font-weight: 700;
+            text-align: left;
+        }
+        
+        .box_div div p {
+            margin-top: 2px;
+        }
     </style>
 </head>
 
 <body>
     <div class="box">
         <h1>Movies Adda</h1>
+        <div class="hidden" id="movies"></div>
         <div class="box2">
-            <input type="text" id="movie" placeholder="Movie title">
-            <button onclick="movies()">Search</button>
+            <input oninput="debounce(searchData,1000)" type="text" id="movie" placeholder="Movie title">
+            <button onclick="main()">Search</button>
         </div>
     </div>
     <div id="product"></div>
 </body>
 <script>
-    async function movies() {
-        let name = document.getElementById("movie").value;
+    var timerId;
+    var sbar = document.getElementById("movies");
+    async function movies(name) {
+
         console.log(name);
         let res = await fetch(`http://www.omdbapi.com/?s=${name}&apikey=b282abeb&`);
 
         let data = await res.json();
         if (data.Response == 'True') {
             console.log(typeof(data.Response));
-            showItem(data.Search);
-            console.log(data.Search);
+
+            return data;
         } else {
             console.log(data);
             alert(data.Error);
         }
-        document.getElementById("movie").value = "";
+
     }
     var parent = document.getElementById("product");
 
@@ -144,6 +186,17 @@
         });
     }
 
+    function main() {
+        sbar.classList.add("hidden");
+
+        let name = document.getElementById("movie").value;
+
+        let x = movies(name);
+        x.then((res) => {
+            showItem(res.Search);
+        });
+        document.getElementById("movie").value = "";
+    }
 
 
     function details(pr) {
@@ -165,7 +218,65 @@
         //console.log(rating.imdbRating);
         return rating.imdbRating;
 
+    }
+    // Searching part start
 
+    function appendMovies(movie_data) {
+        if (movie_data === undefined) {
+            return false;
+        }
+        sbar.innerHTML = null;
+
+        movie_data.forEach((mve) => {
+            let box_div = document.createElement('div');
+            box_div.setAttribute('class', 'box_div');
+            let box_div2 = document.createElement('div');
+
+            let box_img = document.createElement('img');
+            box_img.src = mve.Poster;
+
+            let box_name = document.createElement('p');
+            box_name.innerText = mve.Title;
+
+            let box_type = document.createElement('p');
+            box_type.innerText = "Type :- " + mve.Type;
+
+            box_div2.append(box_name, box_type);
+
+            box_div.append(box_img, box_div2);
+
+            box_div.onclick = () => {
+                details(mve);
+            };
+            sbar.append(box_div);
+        });
+    }
+
+    async function searchData() {
+
+        sbar.classList.remove("hidden");
+
+        let name = document.getElementById("movie").value;
+
+        if (name.length < 3) {
+            return false;
+        }
+        let x = movies(name);
+        x.then((res) => {
+            appendMovies(res.Search);
+            console.log(res.Search);
+        })
+
+    }
+
+    function debounce(func, delay) {
+        if (timerId) {
+            clearTimeout(timerId);
+        }
+
+        timerId = setTimeout(() => {
+            func();
+        }, delay);
     }
 </script>
 
