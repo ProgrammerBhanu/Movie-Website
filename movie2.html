@@ -103,6 +103,46 @@
         .box_div div p {
             margin-top: 2px;
         }
+        /*Trending And Popular*/
+        
+        #popular {
+            display: flex;
+            width: 100%;
+            border: 13px solid #bed5cd;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+        
+        #trending {
+            display: flex;
+            width: 100%;
+            border: 13px solid #bed5cd;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+        
+        .tr_div {
+            display: flex;
+            flex-direction: column;
+            background-color: #334366;
+            margin: 10px 10px;
+            padding: 5px;
+            width: 150px;
+            height: 250px;
+        }
+        
+        .tr_div img {
+            width: 150px;
+            height: 70%;
+        }
+        
+        .tr_div div p {
+            display: block;
+            overflow: hidden;
+            padding: 0px 5px;
+        }
     </style>
 </head>
 
@@ -115,6 +155,10 @@
             <button onclick="main()">Search</button>
         </div>
     </div>
+    <h2>Popular</h2>
+    <div id="popular"></div>
+    <h2>Trending</h2>
+    <div id="trending"></div>
     <div id="product"></div>
 </body>
 <script>
@@ -264,7 +308,7 @@
         let x = movies(name);
         x.then((res) => {
             appendMovies(res.Search);
-            console.log(res.Search);
+            //console.log(res.Search);
         })
 
     }
@@ -278,6 +322,75 @@
             func();
         }, delay);
     }
+
+    var tr_item = document.getElementById("trending");
+    var pr_item = document.getElementById("popular");
+    // Trending and Popular
+    function appendTrending(data) {
+        data.forEach((mve) => {
+            let box_div = document.createElement('div');
+            box_div.setAttribute('class', 'tr_div');
+            let box_div2 = document.createElement('div');
+
+            let box_img = document.createElement('img');
+            box_img.src = "https://image.tmdb.org/t/p/w500" + mve.poster_path;
+
+            let box_name = document.createElement('p');
+            box_name.innerText = mve.original_title;
+
+            let box_date = document.createElement('p');
+            box_date.innerText = " " + mve.release_date;
+
+            box_div2.append(box_name, box_date);
+
+            box_div.append(box_img, box_div2);
+
+
+            tr_item.append(box_div);
+        })
+    }
+    async function trending() {
+        let res = await fetch("https://api.themoviedb.org/3/trending/all/week?api_key=107989b284289bb84c0118964b3c33c2");
+
+        let data = await res.json();
+        console.log(data.results);
+        appendTrending(data.results);
+
+    }
+    trending();
+
+    function appendPopular(data) {
+        data.forEach((mve) => {
+            let box_div = document.createElement('div');
+            box_div.setAttribute('class', 'tr_div');
+            let box_div2 = document.createElement('div');
+
+            let box_img = document.createElement('img');
+            box_img.src = "https://image.tmdb.org/t/p/w500" + mve.poster_path;
+
+            let box_name = document.createElement('p');
+            box_name.innerText = mve.original_title;
+
+            let box_date = document.createElement('p');
+            box_date.innerText = " " + mve.release_date;
+
+            box_div2.append(box_name, box_date);
+
+            box_div.append(box_img, box_div2);
+
+
+            pr_item.append(box_div);
+        })
+    }
+    async function popularity() {
+        let res = await fetch("https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=107989b284289bb84c0118964b3c33c2");
+
+        let data = await res.json();
+        console.log(data.results);
+        appendPopular(data.results);
+
+    }
+    popularity();
 </script>
 
 </html>
